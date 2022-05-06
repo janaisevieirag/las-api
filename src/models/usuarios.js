@@ -1,16 +1,11 @@
-const pool = require("../infraestrutura/conexao");
+const pool = require("../infraestrutura/database/conexao");
 const fetch = require("node-fetch");
+const repositorio = require("../repositorios/usuario");
+
 
 class Usuarios {
-  listar(res, next) {
-    const sql = "SELECT * FROM Usuarios";
-    pool.query(sql, (erro, resultados) => {
-      if (erro) {
-        next(erro);
-      } else {
-        res.status(200).json(resultados);
-      }
-    });
+  listar() {
+    return repositorio.listar();
   }
 
   buscarPorId(id, res, next) {
@@ -29,7 +24,7 @@ class Usuarios {
     });
   }
 
-  async adicionar(usuario, res, next) {
+  async adicionar(usuario) {
     const nomeEhValido =
       usuario.nome.length > 0 &&
       (await this.validarNomeUsuarioNaoUtilizado(usuario.nome));
@@ -53,17 +48,12 @@ class Usuarios {
     const existemErros = erros.length;
 
     if (existemErros) {
-      res.status(400).json(erros);
+      return new Promise.reject(erros);
     } else {
-      const sql = "INSERT INTO Usuarios SET ?";
-
-      pool.query(sql, usuario, (erro) => {
-        if (erro) {
-          next(erro);
-        } else {
-          res.status(201).json(usuario);
-        }
-      });
+        return repositorio.adicionar(usuario).then((resultados) =>{
+          const id = resultados.insertId;
+          return { ...usuario, id };
+        });
     }
   }
 

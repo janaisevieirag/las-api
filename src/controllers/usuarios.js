@@ -2,7 +2,9 @@ const Usuarios = require("../models/usuarios");
 
 module.exports = (app) => {
   app.get("/usuarios", (req, res, next) => {
-    Usuarios.listar(res, next);
+    Usuarios.listar()
+      .then((resultados) => res.json(resultados))
+      .catch((erros) => next(erros));
   });
 
   app.get("/usuarios/:id", (req, res, next) => {
@@ -12,7 +14,9 @@ module.exports = (app) => {
 
   app.post("/usuarios", (req, res, next) => {
     const usuarios = req.body;
-    Usuarios.adicionar(usuarios, res, next);
+    Usuarios.adicionar(usuarios)
+        .then((usuarioAdicionado) => res.status(200).json(usuarioAdicionado))
+        .catch((erros) => next(erros));
   });
 
   app.put("/usuarios/:id", (req, res, next) => {
